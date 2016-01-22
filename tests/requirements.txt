@@ -1,0 +1,2 @@
+kennethreitz/requests
+docopt/docopt
