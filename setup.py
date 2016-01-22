@@ -30,6 +30,7 @@ if 'test' in argv:
 
 __label__ = 'pipgh'
 __description__ = 'Tool to install python packages from Github.'
+__version__ = '0.0.1'
 
 
 if 'clean' in argv:
@@ -52,6 +53,7 @@ if 'clean' in argv:
 setuptools.setup(
     name=__label__,
     description=__description__,
+    version=__version__,
     author='Filipe Funenga',
     author_email='fmafunenga@gmail.com',
     url='https://github.com/ffunenga/%s' % __label__,
