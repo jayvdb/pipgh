@@ -34,6 +34,8 @@ __description__ = 'Tool to install python packages from Github.'
 
 if 'clean' in argv:
     shutil.rmtree('%s.egg-info' % __label__, ignore_errors=True)
+    shutil.rmtree('build', ignore_errors=True)
+    shutil.rmtree('dist', ignore_errors=True)
     shutil.rmtree('%s/__pycache__' % __label__, ignore_errors=True)
     shutil.rmtree('tests/__pycache__', ignore_errors=True)
     def pyclean(path):
@@ -56,4 +58,9 @@ setuptools.setup(
     license='MIT',
     packages=[__label__],
     test_suite = 'tests',
+    entry_points = {
+        'console_scripts' : [
+            '{pkg} = {pkg}:main'.format(pkg=__label__)
+        ]
+    }
 )

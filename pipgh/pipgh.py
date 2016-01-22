@@ -31,7 +31,7 @@ def authenticate(top_level_url=u'https://api.github.com'):
         else:
             password = os.environ['GH_AUTH_USER']
     except KeyboardInterrupt:
-        exit(u'')
+        sys.exit(u'')
     try:
         import urllib.request as urllib_alias
     except ImportError:
@@ -87,16 +87,17 @@ class URLOpenContext:
         self.f.close()
 
 
-def search(auth_flag, argv):
+def search(auth_flag, argv, output=True):
     if len(argv) < 2 or argv[0] != 'search':
-        exit('usage: python %s search <query>...' % __file__)
+        sys.exit('usage: pipgh search <query>...')
     params = {u'q': u' '.join(argv[1:]) + u' language:python',
               u'stars': u'stars'}
     url = u'https://api.github.com/search/repositories'
     if auth_flag:
         authenticate(url)
     url += u'?' + urlencode(params)
-    print(u"Searching github.com for '%s'..." % header(params[u'q']))
+    if output:
+        print(u"Searching github.com for '%s'..." % header(params[u'q']))
     with URLOpenContext(url) as conn:
         try:
             headers = conn.getheaders()
@@ -128,12 +129,15 @@ def search(auth_flag, argv):
         dlen = maxlen - dlen
         description = (description if len(description) < dlen
                                    else (description[:dlen] + u'...'))
-        print(okblue(label), bold(description), stats)
+        if output:
+            print(okblue(label), bold(description), stats)
     total_count = response['total_count']
     phrase = {1: u'repository was'}.get(total_count, u'repositories were')
     nitems = len(response['items'])
     showing = {nitems: u''}.get(total_count, u', showing the first %d' % nitems)
-    print(u'[%d %s found%s]' % (response['total_count'], phrase, showing))
+    if output:
+        print(u'[%d %s found%s]' % (total_count, phrase, showing))
+    return total_count, lines
 
 
 class ShowNode(object):
@@ -164,14 +168,15 @@ class ShowNode(object):
         return rst
 
 
-def show(auth_flag, argv):
+def show(auth_flag, argv, output=True):
     if len(argv) != 2 or argv[0] != 'show':
-        exit('usage: python %s show <full_name>...' % __file__)
+        sys.exit('usage: pipgh show <full_name>...')
     url = u'https://api.github.com/repos'
     if auth_flag:
         authenticate(url)
     url += '/' + argv[1]
-    print(u"Fetching '%s' information..." % header(argv[1]), file=sys.stderr)
+    if output:
+        print(u"Fetching '%s' information..." % header(argv[1]), file=sys.stderr)
     with URLOpenContext(url) as conn:
         try:
             headers = conn.getheaders()
@@ -180,7 +185,8 @@ def show(auth_flag, argv):
         response = conn.read().decode('utf-8')
         response = json.loads(response)
     url += '/readme'
-    print(u"Fetching %s..." % header('readme'), file=sys.stderr)
+    if output:
+        print(u"Fetching %s..." % header('readme'), file=sys.stderr)
     try:
         with URLOpenContext(url) as conn:
             readme = conn.read().decode('utf-8')
@@ -189,15 +195,19 @@ def show(auth_flag, argv):
         readme = u''
     root = ShowNode(response)
     try:
-        print(root)
+        if output:
+            print(root)
     except UnicodeEncodeError:
-        print(root.__str__().encode('utf-8'))
+        if output:
+            print(root.__str__().encode('utf-8'))
     try:
         readme = base64.decodestring(readme)
     except TypeError:
         readme = base64.decodestring(readme.encode('utf-8')).decode('utf-8')
     finally:
-        print(readme)
+        if output:
+            print(readme)
+    return response, readme
 
 
 class TempDirContext:
@@ -278,22 +288,22 @@ def install_one_package(full_name):
 
 
 def install(auth_flag, argv):
-    __fmt = 'usage: python %s install (<full_name> | -r <requirements.txt>)'
+    _err = 'usage: pipgh install (<full_name> | -r <requirements.txt>)'
     if len(argv) == 2:
-        if argv[1] == '-r':
-            exit(__fmt % __file__)
+        if argv[0] != 'install' or argv[1] == '-r':
+            sys.exit(_err)
         full_names = [argv[1]]
     elif len(argv) == 3:
         if argv[1] != '-r':
-            exit(__fmt % __file__)
+            sys.exit(_err)
         try:
             with open(argv[2]) as f:
                 full_names = [l.strip() for l in f.readlines()]
                 full_names = [fn for fn in full_names if fn != '']
         except FileNotFoundError as e:
-            exit(e)
+            sys.exit(e)
     else:
-        exit(__fmt % __file__)
+        sys.exit(_err)
     url = u'https://api.github.com/repos'
     if auth_flag:
         authenticate(url)
@@ -302,15 +312,15 @@ def install(auth_flag, argv):
 
 
 
-USAGE_MESSAGE = """\
+USAGE_MESSAGE = u"""\
 Usage: pipgh [--auth] search <query>...
        pipgh [--auth] show <full_name>
        pipgh [--auth] install (<full_name> | -r <requirements.txt>)
        pipgh [-h | --help]
-"""
+""".format(file=__file__)
 
 
-HELP_MESSAGE = """\
+HELP_MESSAGE = u"""\
 A command-line interface to fetch python packages from github.
 
 Commands:
@@ -351,27 +361,35 @@ Examples:
         kennethreitz/requests
         $ pipgh show -r requirements.txt
         (...)
-"""
+""".format(file=__file__)
 
 
-def main(argv=sys.argv[1:]):
+__doc__ = USAGE_MESSAGE + u'\n' + HELP_MESSAGE
+
+
+def main(argv=sys.argv[1:], dry_run=False):
     commands = {'search': search, 'show': show, 'install': install}
-    if (len(argv) == 0 or (len(argv) == 1 and argv[0] in ['-h', '--help'])):
-        help_msg = USAGE_MESSAGE.format(file=__file__)
-        help_msg += u'\n' + HELP_MESSAGE.format(file=__file__)
-        exit(help_msg)
-    def _abort():
-        help_msg = u'error: command "%s" is unknown.' % argv[0]
-        help_msg += '\n' + USAGE_MESSAGE.format(file=__file__).rstrip()
-        exit(help_msg)
+    def _abort(unknown_cmd=False):
+        if unknown_cmd:
+            help_msg = u'error: command "%s" is unknown.' % argv[0]
+            help_msg += '\n' + USAGE_MESSAGE.rstrip()
+        else:
+            help_msg = __doc__
+        sys.exit(help_msg)
+    no_args = len(argv) == 0
+    get_help = len(argv) == 1 and argv[0] in ['-h', '--help']
+    if no_args or get_help:
+        _abort()
     auth_flag = False
     if argv[0] == '--auth':
         if len(argv) == 1:
-            _abort()
+            _abort(unknown_cmd=True)
         auth_flag = True
         argv = argv[1:]
     if argv[0] not in commands:
-        _abort()
+        _abort(unknown_cmd=True)
+    if dry_run:
+        return argv[0], auth_flag, argv
     commands[argv[0]](auth_flag, argv)
 
 
