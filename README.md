@@ -28,17 +28,9 @@ is equivalent to search
 
 with your web-browser on github.com/search.
 
-###### Show
-
-Take a look at a repository metadata and its README file with this:
-
-    $ pipgh show docopt/docopt
-    (...)
-    $ pipgh show docopt/docopt | less   # also works
-
 ###### Install
 
-Finally, install a package:
+Install a package:
 
     $ pipgh install docopt/docopt
     Fetching files from 'docopt/docopt'...
@@ -51,6 +43,14 @@ Or install a list of packages from a file:
     kennethreitz/requests
     $ pipgh install -r requirements.txt
     (...)
+
+###### Show
+
+Show a repository metadata and its README file with this:
+
+    $ pipgh show docopt/docopt
+    (...)
+    $ pipgh show docopt/docopt | less   # also works
 
 ## Usage
 

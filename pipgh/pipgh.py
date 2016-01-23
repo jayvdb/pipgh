@@ -334,33 +334,42 @@ Options:
                  Use this when the rate limit threshold is achieved.
 
 Examples:
-    How to search for individual packages:
+    SEARCH for individual packages:
+
         $ pipgh search requests
         (...)
         $ pipgh search docopt
         (...)
 
     Searching like this:
+
         $ pipgh search http async server
+
     is equivalent to search
+
         http async server language:python
+
     with your web-browser on github.com/search.
 
-    Take a look at a repository metadata and its README file with this:
-        $ pipgh show docopt/docopt
-        (...)
-        $ pipgh show docopt/docopt | less   # also works
+    INSTALL a package:
 
-    Finally, install a package:
         $ pipgh install docopt/docopt
-        (...)
+        Fetching files from 'docopt/docopt'...
+        Installing python package 'docopt-0.6.1'...
 
     Or install a list of packages from a file:
+
         $ cat requirements.txt
         docopt/docopt
         kennethreitz/requests
         $ pipgh install -r requirements.txt
         (...)
+
+    SHOW a repository metadata and its README file with this:
+
+        $ pipgh show docopt/docopt
+        (...)
+        $ pipgh show docopt/docopt | less   # also works
 """.format(file=__file__)
 
 
