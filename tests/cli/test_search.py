@@ -18,8 +18,3 @@ class TestSearch(unittest.TestCase):
             except AssertionError as e:
                 e.args = (e.args[0] + ' for ' + str(argv),)
                 raise
-
-    def test_execution(self):
-        argv = ['search', 'docopt/docopt']
-        total_count, lines = pipgh.search(True, argv, output=False)
-        self.assertGreaterEqual(total_count, len(lines))

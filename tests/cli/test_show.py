@@ -18,8 +18,3 @@ class TestShow(unittest.TestCase):
             except AssertionError as e:
                 e.args = (e.args[0] + ' for ' + str(argv),)
                 raise
-
-    def test_execution(self):
-        argv = ['show', 'docopt/docopt']
-        response, readme = pipgh.show(True, argv, output=False)
-        self.assertGreaterEqual(response['full_name'], argv[1])
