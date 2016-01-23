@@ -41,7 +41,7 @@ Or install a list of packages from a file:
     $ cat requirements.txt
     docopt/docopt
     kennethreitz/requests
-    $ pipgh show -r requirements.txt
+    $ pipgh install -r requirements.txt
     (...)
 
 ## Usage

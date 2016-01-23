@@ -359,7 +359,7 @@ Examples:
         $ cat requirements.txt
         docopt/docopt
         kennethreitz/requests
-        $ pipgh show -r requirements.txt
+        $ pipgh install -r requirements.txt
         (...)
 """.format(file=__file__)
 
