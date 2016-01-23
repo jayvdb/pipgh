@@ -206,13 +206,12 @@ def show(auth_flag, argv, output=True):
     except UnicodeEncodeError:
         if output:
             print(root.__str__().encode('utf-8'))
-    try:
+    if sys.version_info < (3, 0, 0):
         readme = base64.decodestring(readme)
-    except TypeError:
-        readme = base64.decodestring(readme.encode('utf-8')).decode('utf-8')
-    finally:
-        if output:
-            print(readme)
+    else:
+        readme = base64.decodebytes(readme.encode('utf-8')).decode('utf-8')
+    if output:
+        print(readme)
     return response, readme
 
 
