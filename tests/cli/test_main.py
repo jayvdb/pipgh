@@ -16,13 +16,18 @@ class TestMain(unittest.TestCase):
     def test_cli_fails(self):
         # pipgh [--auth] search (...)
         # pipgh [--auth] show (...)
-        # pipgh [--auth] install (...)
+        # pipgh install (...)
         # pipgh [-h | --help]
         argvs = [
             ['unknown_command'],
             ['--auth'],
             ['--auth', 'searched'],
             ['--aut', 'search'],
+            ['--aut', 'show'],
+            ['--auth', 'install'],
+            ['--auth', 'install', 'docopt/docopt'],
+            ['--auth', 'show'],
+            ['--auth', 'search'],
             ['-h'],
             ['--help'],
             ['-help'],
@@ -38,13 +43,22 @@ class TestMain(unittest.TestCase):
                 raise
 
     def test_dry_run(self):
+        # pipgh show <full_name>                2
+        # pipgh install <full_name>             2
+        # pipgh search <query>...               2+
+        # pipgh install <full_name> <ref>       3
+        # pipgh install -r <requirements.txt>   3
+        # pipgh --auth show <full_name>         3
+        # pipgh --auth search <query>...        3+
         argvs = [
-            (['search'],            ('search', False, ['search'])),
-            (['--auth', 'search'],  ('search', True, ['search'])),
-            (['show'],              ('show', False, ['show'])),
-            (['--auth', 'show'],    ('show', True, ['show'])),
-            (['install'],           ('install', False, ['install'])),
-            (['--auth', 'install'], ('install', True, ['install'])),
+            (['show', 'requests'],             ('show', False, ['show', 'requests'])),
+            (['install', 'requests'],          ('install', False, ['install', 'requests'])),
+            (['search', 'requests'],           ('search', False, ['search', 'requests'])),
+            (['install', 'requests', 'v0.1'],          ('install', False, ['install', 'requests', 'v0.1'])),
+            (['install', '-r', 'reqs.txt'],          ('install', False, ['install', '-r', 'reqs.txt'])),
+            (['--auth', 'show', 'requests'],   ('show', True, ['show', 'requests'])),
+            (['--auth', 'search', 'requests'], ('search', True, ['search', 'requests'])),
+            (['--auth', 'search', 'requests', 'http'], ('search', True, ['search', 'requests', 'http'])),
         ]
         for argv, ref in argvs:
             rst = pipgh.main(argv, dry_run=True)

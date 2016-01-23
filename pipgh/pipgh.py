@@ -264,80 +264,85 @@ def unzip(zipfilename, destination):
     shutil.rmtree(root_dir)
 
 
-def install_one_package(full_name):
-    url = u'https://api.github.com/repos'
-    url += '/' + full_name
-    print(u"Fetching files from '%s'..." % header(full_name), file=sys.stderr)
-    with URLOpenContext(url) as conn:
-        try:
-            headers = conn.getheaders()
-        except AttributeError:
-            headers = conn.headers.dict
-        response = conn.read().decode('utf-8')
-        response = json.loads(response)
-    url = "https://github.com/{}/zipball/{}"
-    url = url.format(full_name, response['default_branch'])
+def install_one_package(repo_label, ref=None):
+    ref = ref if ref != None else 'master'
+    url = "https://github.com/{}/archive/{}.zip".format(repo_label, ref)
     with TempDirContext(".pygh") as cwd:
+        _info = u"Fetching files from '%s'..." % header(repo_label)
+        print(_info, file=sys.stderr)
         urlretrieve(url, 'distro.zip')
         unzip('distro.zip', '.')
         args = ['python', 'setup.py', '--fullname']
         full_name = subprocess.check_output(args).decode('utf-8').strip()
-        print(u"Installing python package '%s'..." % header(full_name),
-              file=sys.stderr)
+        _info = u"Installing python package '%s'..." % header(full_name)
+        print(_info, file=sys.stderr)
         args = ['python', 'setup.py', 'install']
         with open(os.devnull, 'wb') as shutup:
             return_code = subprocess.check_call(
                     args, stdout=shutup, stderr=shutup)
         if return_code != 0:
             _fmt = u'%s: installation failed with code %d'
-            print(_fmt % (fail('Error'), return_code))
+            sys.exit(_fmt % (fail('Error'), return_code))
 
 
-def install(auth_flag, argv):
-    _err = 'usage: pipgh install (<full_name> | -r <requirements.txt>)'
-    if len(argv) == 2:
+def install(auth_flag, argv, dry_run=False):
+    # pipgh install <full_name>             2
+    # pipgh install <full_name> <ref>       3
+    # pipgh install -r <requirements.txt>   3
+    _err = ('usage: pipgh install '
+            '( (<full_name> [<ref>]) | (-r <requirements.txt>) )')
+    if len(argv) not in [2, 3] or argv[0] != 'install' or auth_flag != False:
+        sys.exit(_err)
+    if argv[1] == '-r' and len(argv) != 3:
+        sys.exit(_err)
+    if len(argv) == 3:
+        if argv[1] == '-r':
+            try:
+                with open(argv[2]) as f:
+                    lines = [l.strip() for l in f.readlines()]
+            except FileNotFoundError as e:
+                sys.exit(e)
+            else:
+                lines = [l.split() for l in lines if l != '']
+                lines = [(l if len(l) == 2 else (l[0], None)) for l in lines]
+                repo_labels, refs = zip(*lines)
+                repo_labels, refs = list(repo_labels), list(refs)
+        else:
+            repo_labels = [argv[1]]
+            refs = [argv[2]]
+    elif len(argv) == 2:
         if argv[0] != 'install' or argv[1] == '-r':
             sys.exit(_err)
-        full_names = [argv[1]]
-    elif len(argv) == 3:
-        if argv[1] != '-r':
-            sys.exit(_err)
-        try:
-            with open(argv[2]) as f:
-                full_names = [l.strip() for l in f.readlines()]
-                full_names = [fn for fn in full_names if fn != '']
-        except FileNotFoundError as e:
-            sys.exit(e)
-    else:
-        sys.exit(_err)
-    url = u'https://api.github.com/repos'
-    if auth_flag:
-        authenticate(url)
-    for full_name in full_names:
-        install_one_package(full_name)
+        repo_labels = [argv[1]]
+        refs = [None]
 
+    if dry_run:
+        return repo_labels, refs
+    for repo_label, ref in zip(repo_labels, refs):
+        install_one_package(repo_label, ref)
 
 
 USAGE_MESSAGE = u"""\
 Usage: pipgh [--auth] search <query>...
        pipgh [--auth] show <full_name>
-       pipgh [--auth] install (<full_name> | -r <requirements.txt>)
+       pipgh install ( (<full_name> [<ref>]) | (-r <requirements.txt>) )
        pipgh [-h | --help]
 """.format(file=__file__)
 
 
 HELP_MESSAGE = u"""\
-A command-line interface to fetch python packages from github.
+A tool to install python packages from Github.
 
 Commands:
-    search   Search python packages in github.
+    search   Search Python packages in github.
+    install  Download and install a package.
     show     Shows information from github about a repository.
-    install  Download and install a package (from a github repository).
 
 Options:
     -h | --help  Shows this help message.
-    --auth       Activates the use of HTTP basic authentication.
-                 Use this when the rate limit threshold is achieved.
+    --auth       Activates the use of HTTP basic authentication when
+                 communicating with api.github.com. Use this if the rate
+                 limit threshold is achieved.
 
 Examples:
     SEARCH for individual packages:
@@ -357,16 +362,23 @@ Examples:
 
     with your web-browser on github.com/search.
 
-    INSTALL a package:
+    INSTALL a package from the latest commit on the master branch:
 
         $ pipgh install docopt/docopt
         Fetching files from 'docopt/docopt'...
         Installing python package 'docopt-0.6.1'...
 
+    Install a specific version of the code using a reference (e.g. release,
+    commit's hash value or branch):
+
+        $ pipgh install kennethreitz/requests v2.9.1
+        $ pipgh install mitsuhiko/flask 23cf923c7c2e4a3808e6c71b6faa34d1749d4cb6
+        $ pipgh install tornadoweb/tornado stable
+
     Or install a list of packages from a file:
 
         $ cat requirements.txt
-        docopt/docopt
+        docopt/docopt 0.6.2
         kennethreitz/requests
         $ pipgh install -r requirements.txt
         (...)
@@ -384,28 +396,42 @@ __doc__ = USAGE_MESSAGE + u'\n' + HELP_MESSAGE
 
 def main(argv=sys.argv[1:], dry_run=False):
     commands = {'search': search, 'show': show, 'install': install}
-    def _abort(unknown_cmd=False):
-        if unknown_cmd:
-            help_msg = u'error: command "%s" is unknown.' % argv[0]
+    def _abort(unknown_cmd=None):
+        if unknown_cmd != None:
+            help_msg = u'error: command "%s" is unknown.' % unknown_cmd
             help_msg += '\n' + USAGE_MESSAGE.rstrip()
         else:
             help_msg = __doc__
         sys.exit(help_msg)
+    # pipgh
+    # pipgh -h
+    # pipgh --help
     no_args = len(argv) == 0
     get_help = len(argv) == 1 and argv[0] in ['-h', '--help']
     if no_args or get_help:
         _abort()
-    auth_flag = False
+    # pipgh show <full_name>                2
+    # pipgh install <full_name>             2
+    # pipgh search <query>...               2+
+    # pipgh install <full_name> <ref>       3
+    # pipgh install -r <requirements.txt>   3
+    # pipgh --auth show <full_name>         3
+    # pipgh --auth search <query>...        3+
+    if len(argv) < 2 or argv[0] not in ['show', 'install', 'search', '--auth']:
+        _abort(unknown_cmd=argv[0])
     if argv[0] == '--auth':
-        if len(argv) == 1:
-            _abort(unknown_cmd=True)
+        if len(argv) < 3 or argv[1] not in ['show', 'search']:
+            _abort(unknown_cmd=argv[1])
+        key = argv[1]
         auth_flag = True
         argv = argv[1:]
-    if argv[0] not in commands:
-        _abort(unknown_cmd=True)
+    else:
+        key = argv[0]
+        auth_flag = False
+        argv = argv
     if dry_run:
-        return argv[0], auth_flag, argv
-    commands[argv[0]](auth_flag, argv)
+        return key, auth_flag, argv
+    commands[key](auth_flag, argv)
 
 
 if __name__ == "__main__":

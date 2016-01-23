@@ -1,0 +1,4 @@
+docopt/docopt 0.6.2
+mitsuhiko/flask 23cf923c7c2e4a3808e6c71b6faa34d1749d4cb6
+tornadoweb/tornado stable
+kennethreitz/requests

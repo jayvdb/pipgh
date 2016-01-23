@@ -34,10 +34,10 @@ if 'clean' in argv:
     shutil.rmtree('%s.egg-info' % pipgh.__name__, ignore_errors=True)
     shutil.rmtree('build', ignore_errors=True)
     shutil.rmtree('dist', ignore_errors=True)
-    shutil.rmtree('%s/__pycache__' % pipgh.__name__, ignore_errors=True)
-    shutil.rmtree('tests/__pycache__', ignore_errors=True)
     def pyclean(path):
         for root, drs, fns in os.walk(path):
+            pycache = os.path.join(root, '__pycache__')
+            shutil.rmtree(pycache, ignore_errors=True)
             filtered_fns = filter(lambda f: f.endswith('.pyc'), fns)
             for fn in filtered_fns:
                 _fn = os.path.join(root, fn)
