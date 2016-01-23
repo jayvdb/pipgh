@@ -7,7 +7,14 @@ A tool to install python packages from Github.
 Search for individual packages:
 
     $ pipgh search requests
+    Searching github.com for 'requests language:python'...
+    kennethreitz/requests Python HTTP Requests for... (★:17198 f:2998 u:2016 Jan 22)
+    requests/requests-oauthlib OAuthlib support for P... (★:517 f:146 u:2016 Jan 12)
+    kennethreitz/grequests Requests + Gevent = <3 (★:1246 f:153 u:2015 Nov 21)
+    requests/requests-ntlm NTLM authentication support ... (★:65 f:32 u:2015 Oct 31)
+    bulkan/robotframework-requests Robot Framework keyw... (★:81 f:58 u:2016 Jan 13)
     (...)
+    [2226 repositories were found, showing the first 30]
     $ pipgh search docopt
     (...)
 
@@ -34,7 +41,8 @@ Take a look at a repository metadata and its README file with this:
 Finally, install a package:
 
     $ pipgh install docopt/docopt
-    (...)
+    Fetching files from 'docopt/docopt'...
+    Installing python package 'docopt-0.6.1'...
 
 Or install a list of packages from a file:
 
