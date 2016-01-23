@@ -1,9 +1,8 @@
 # pipgh
 
 *pipgh* allows searching for Python packages on Github (GH) and installing
-them directly by citing the respective `"{owner}/{repo}"` identifier. You
-can further specify a direct reference to a branch, a release or a commit's
-hash value, using the pattern `"{owner}/{repo} {ref}"`.
+them directly. It further allows to specify a reference to a branch, a
+release or a commit's hash value.
 
 *pipgh* works with common HTTP GET requests. This simplicity makes it a
 great solution to deploy software with dependencies available on github,
