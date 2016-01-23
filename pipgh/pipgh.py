@@ -17,7 +17,7 @@ except ImportError:
     from urllib2 import urlopen
 
 
-__version__ = '0.0.2a0'
+__version__ = '0.0.2'
 __description__ = 'A tool to install python packages from Github.'
 __author__ = 'Filipe Funenga'
 __license__ = 'MIT'
