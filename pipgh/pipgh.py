@@ -1,20 +1,16 @@
 from __future__ import print_function
-import os
-import platform
 import sys
+import os
+import getpass
 import json
 import datetime
-import getpass
 import base64
-import shutil
-import zipfile
-import subprocess
 try:
     from urllib.parse import urlencode
-    from urllib.request import urlopen, urlretrieve
 except ImportError:
-    from urllib import urlencode, urlretrieve
-    from urllib2 import urlopen
+    from urllib import urlencode
+
+from . import tools
 
 
 __version__ = '0.0.3a0'
@@ -49,50 +45,6 @@ def authenticate(top_level_url=u'https://api.github.com'):
     urllib_alias.install_opener(opener)
 
 
-def test_color_support():
-    is_ansi = os.environ.get('TERM', '') == 'ANSI'
-    for handle in [sys.stdout, sys.stderr]:
-        isatty = hasattr(handle, 'isatty') and handle.isatty()
-        if isatty or is_ansi:
-            is_windows = platform.system() == 'Windows'
-            if is_windows and not is_ansi:
-                return False
-            else:
-                return True
-        return False
-
-
-def force_unicode(s):
-    try:
-        return unicode(s)
-    except NameError:
-        return str(s)
-normalize = lambda s: u'' if s == None else force_unicode(s)
-color_support = test_color_support()
-colorize = lambda i, s: (normalize(s) if not color_support
-                                      else (i + normalize(s) + u'\033[0m'))
-header = lambda s: colorize(u'\033[95m', s)
-okblue = lambda s: colorize(u'\033[94m', s)
-okgreen = lambda s: colorize(u'\033[92m', s)
-warning = lambda s: colorize(u'\033[93m', s)
-fail = lambda s: colorize(u'\033[91m', s)
-bold = lambda s: colorize(u'\033[1m', s)
-underline = lambda s: colorize(u'\033[4m', s)
-
-
-class URLOpenContext:
-
-    def __init__(self, url):
-        self.url = url
-
-    def __enter__(self):
-        self.f = urlopen(self.url)
-        return self.f
-
-    def __exit__(self, *args):
-        self.f.close()
-
-
 def search(auth_flag, argv, output=True):
     if len(argv) < 2 or argv[0] != 'search':
         sys.exit('usage: pipgh search <query>...')
@@ -103,8 +55,8 @@ def search(auth_flag, argv, output=True):
         authenticate(url)
     url += u'?' + urlencode(params)
     if output:
-        print(u"Searching github.com for '%s'..." % header(params[u'q']))
-    with URLOpenContext(url) as conn:
+        print(u"Searching github.com for '%s'..." % tools.header(params[u'q']))
+    with tools.URLOpenContext(url) as conn:
         try:
             headers = conn.getheaders()
         except AttributeError:
@@ -116,8 +68,8 @@ def search(auth_flag, argv, output=True):
     description_lens = []
     lines = []
     for item in response['items']:
-        label = normalize(item['full_name'])
-        description = normalize(item['description'])
+        label = tools.normalize(item['full_name'])
+        description = tools.normalize(item['description'])
         nstars = item['stargazers_count']
         nforks = item['forks_count']
         last_update = datetime.datetime.strptime(
@@ -136,7 +88,7 @@ def search(auth_flag, argv, output=True):
         description = (description if len(description) < dlen
                                    else (description[:dlen] + u'...'))
         if output:
-            print(okblue(label), bold(description), stats)
+            print(tools.okblue(label), tools.bold(description), stats)
     total_count = response['total_count']
     phrase = {1: u'repository was'}.get(total_count, u'repositories were')
     nitems = len(response['items'])
@@ -144,34 +96,6 @@ def search(auth_flag, argv, output=True):
     if output:
         print(u'[%d %s found%s]' % (total_count, phrase, showing))
     return total_count, lines
-
-
-class ShowNode(object):
-
-    def __init__(self, node, level=0):
-        self.level = level
-        def is_str(s):
-            try:
-                return type(s) == unicode
-            except NameError:
-                return type(s) == str
-        _test = lambda i: (type(i[1]) == dict or
-                           (type(i[1]) != dict and
-                            not normalize(i[1]).startswith('http')))
-        self.children = [n for n in node.items()]  # if _test(n)]
-        self.children.sort(key=lambda i: i[0])
-
-    def __str__(self):
-        indent = self.level * u' '
-        items = []
-        for key, value in self.children:
-            if type(value) == dict:
-                value = ShowNode(value, self.level + 4)
-                items.append(u'%s%s:\n%s\n' % (indent, okblue(key), value))
-            else:
-                items.append(u'%s%s: %s\n' % (indent, okblue(key), value))
-        rst = u''.join(items).strip()
-        return rst
 
 
 def show(auth_flag, argv, output=True):
@@ -182,8 +106,9 @@ def show(auth_flag, argv, output=True):
         authenticate(url)
     url += '/' + argv[1]
     if output:
-        print(u"Fetching '%s' information..." % header(argv[1]), file=sys.stderr)
-    with URLOpenContext(url) as conn:
+        _fmt = u"Fetching '%s' information..."
+        print(_fmt % tools.header(argv[1]), file=sys.stderr)
+    with tools.URLOpenContext(url) as conn:
         try:
             headers = conn.getheaders()
         except AttributeError:
@@ -192,14 +117,14 @@ def show(auth_flag, argv, output=True):
         response = json.loads(response)
     url += '/readme'
     if output:
-        print(u"Fetching %s..." % header('readme'), file=sys.stderr)
+        print(u"Fetching %s..." % tools.header('readme'), file=sys.stderr)
     try:
-        with URLOpenContext(url) as conn:
+        with tools.URLOpenContext(url) as conn:
             readme = conn.read().decode('utf-8')
             readme = json.loads(readme)['content']
     except:
         readme = u''
-    root = ShowNode(response)
+    root = tools.ShowNode(response)
     try:
         if output:
             print(root)
@@ -213,75 +138,6 @@ def show(auth_flag, argv, output=True):
     if output:
         print(readme)
     return response, readme
-
-
-class TempDirContext:
-
-    def __init__(self, path):
-        self.path = path
-        self.parent_dir = os.getcwd()
-
-    def __enter__(self):
-        try:
-            os.mkdir(self.path)
-        except OSError as e:
-            if e.errno != 17:  # File exists
-                raise
-            shutil.rmtree(self.path)
-            os.mkdir(self.path)
-        finally:
-            os.chdir(self.path)
-        return self
-
-    def __exit__(self, *args):
-        os.chdir(self.parent_dir)
-        try:
-            shutil.rmtree(self.path)
-        except:
-            pass
-
-
-def unzip(zipfilename, destination):
-    with zipfile.ZipFile(zipfilename) as zf:
-        zf.extractall(destination)
-    for root, ds, fs in os.walk('.'):
-        if root == '.':
-            root_dir = os.path.join(root, ds[0])
-            ini_strip = len(root_dir) + 1
-            continue
-        target = root[ini_strip:]
-        for d in ds:
-            source = os.path.join(root, d)
-            destination = os.path.join(target, d)
-            shutil.move(source, destination)
-        for f in fs:
-            source = os.path.join(root, f)
-            destination = os.path.join(target, f)
-            shutil.move(source, destination)
-        if root != root_dir:
-            break
-    shutil.rmtree(root_dir)
-
-
-def install_one_package(repo_label, ref=None):
-    ref = ref if ref != None else 'master'
-    url = "https://github.com/{}/archive/{}.zip".format(repo_label, ref)
-    with TempDirContext(".pygh") as cwd:
-        _info = u"Fetching files from '%s'..." % header(repo_label)
-        print(_info, file=sys.stderr)
-        urlretrieve(url, 'distro.zip')
-        unzip('distro.zip', '.')
-        args = ['python', 'setup.py', '--fullname']
-        full_name = subprocess.check_output(args).decode('utf-8').strip()
-        _info = u"Installing python package '%s'..." % header(full_name)
-        print(_info, file=sys.stderr)
-        args = ['python', 'setup.py', 'install']
-        with open(os.devnull, 'wb') as shutup:
-            return_code = subprocess.check_call(
-                    args, stdout=shutup, stderr=shutup)
-        if return_code != 0:
-            _fmt = u'%s: installation failed with code %d'
-            sys.exit(_fmt % (fail('Error'), return_code))
 
 
 def install(auth_flag, argv, dry_run=False):
@@ -317,8 +173,11 @@ def install(auth_flag, argv, dry_run=False):
 
     if dry_run:
         return repo_labels, refs
+    _url_fmt = "https://github.com/{}/archive/{}.zip"
     for repo_label, ref in zip(repo_labels, refs):
-        install_one_package(repo_label, ref)
+        ref = ref if ref != None else 'master'
+        url = _url_fmt.format(repo_label, ref)
+        tools.install_one_package(url)
 
 
 USAGE_MESSAGE = u"""\
