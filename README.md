@@ -73,7 +73,7 @@ Show a repository metadata and its README file with this:
     pipgh [--auth] search <query>...
     pipgh [--auth] show <full_name>
     pipgh install ( (<full_name> [<ref>]) | (-r <requirements.txt>) )
-    pipgh [-h | --help]
+    pipgh [-h | --help | --version]
 
 ## Commands
 
