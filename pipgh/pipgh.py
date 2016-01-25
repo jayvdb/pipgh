@@ -13,7 +13,7 @@ except ImportError:
 from . import tools
 
 
-__version__ = '0.0.3a0'
+__version__ = '0.0.3'
 __description__ = 'A tool to install python packages from Github.'
 __author__ = 'Filipe Funenga'
 __license__ = 'MIT'
