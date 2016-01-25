@@ -133,16 +133,18 @@ def unzip(zipfilename, destination):
     shutil.rmtree(root_dir)
 
 
-def install_one_package(url):
+def install_one_package(url, output=True):
     with TempDirContext(".pygh") as cwd:
-        _info = u"Fetching files from '%s'..." % header(url)
-        print(_info, file=sys.stderr)
+        if output:
+            _info = u"Fetching files from '%s'..." % header(url)
+            print(_info, file=sys.stderr)
         urlretrieve(url, 'distro.zip')
         unzip('distro.zip', '.')
         args = ['python', 'setup.py', '--fullname']
         full_name = subprocess.check_output(args).decode('utf-8').strip()
-        _info = u"Installing python package '%s'..." % header(full_name)
-        print(_info, file=sys.stderr)
+        if output:
+            _info = u"Installing python package '%s'..." % header(full_name)
+            print(_info, file=sys.stderr)
         args = ['python', 'setup.py', 'install']
         with open(os.devnull, 'wb') as shutup:
             return_code = subprocess.check_call(

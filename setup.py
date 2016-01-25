@@ -7,7 +7,7 @@ import setuptools
 import pipgh
 
 
-argv = ''.join(sys.argv[1:])
+argv = sys.argv[1:]
 
 
 if 'test' in argv:
@@ -66,6 +66,9 @@ setuptools.setup(
     url='https://github.com/ffunenga/%s' % pipgh.__name__,
     license='MIT',
     packages=[pipgh.__name__],
+    #test_suite = 'tests.execution.test_search',
+    #test_suite = 'tests.execution.test_install',
+    #test_suite = 'tests.execution.test_show',
     test_suite = 'tests',
     entry_points = {
         'console_scripts' : [

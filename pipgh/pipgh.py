@@ -140,7 +140,7 @@ def show(auth_flag, argv, output=True):
     return response, readme
 
 
-def install(auth_flag, argv, dry_run=False):
+def install(auth_flag, argv, dry_run=False, output=True):
     # pipgh install <full_name>             2
     # pipgh install <full_name> <ref>       3
     # pipgh install -r <requirements.txt>   3
@@ -177,7 +177,7 @@ def install(auth_flag, argv, dry_run=False):
     for repo_label, ref in zip(repo_labels, refs):
         ref = ref if ref != None else 'master'
         url = _url_fmt.format(repo_label, ref)
-        tools.install_one_package(url)
+        tools.install_one_package(url, output)
 
 
 USAGE_MESSAGE = u"""\
