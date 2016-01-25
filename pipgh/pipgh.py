@@ -264,9 +264,12 @@ def main(argv=sys.argv[1:], dry_run=False):
     # pipgh
     # pipgh -h
     # pipgh --help
-    no_args = len(argv) == 0
+    if len(argv) == 0:
+        help_msg = USAGE_MESSAGE
+        help_msg += '\nRun "pipgh --help" for a complete help message\n'
+        sys.exit(help_msg)
     get_help = len(argv) == 1 and argv[0] in ['-h', '--help']
-    if no_args or get_help:
+    if get_help:
         _abort()
     # pipgh show <full_name>                2
     # pipgh install <full_name>             2

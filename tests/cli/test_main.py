@@ -19,6 +19,7 @@ class TestMain(unittest.TestCase):
         # pipgh install (...)
         # pipgh [-h | --help]
         argvs = [
+            [],
             ['unknown_command'],
             ['--auth'],
             ['--auth', 'searched'],
