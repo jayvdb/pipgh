@@ -84,4 +84,5 @@ Show a repository metadata and its README file with this:
 ## Options
 
 * `-h | --help` - Shows this help message.
+* `--version` - Shows the current version number.
 * `--auth` - Activates the use of HTTP basic authentication. Use this if the rate limit threshold is achieved.

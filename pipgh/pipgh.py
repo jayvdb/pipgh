@@ -184,7 +184,7 @@ USAGE_MESSAGE = u"""\
 Usage: pipgh [--auth] search <query>...
        pipgh [--auth] show <full_name>
        pipgh install ( (<full_name> [<ref>]) | (-r <requirements.txt>) )
-       pipgh [-h | --help]
+       pipgh [-h | --help | --version]
 """.format(file=__file__)
 
 
@@ -198,6 +198,7 @@ Commands:
 
 Options:
     -h | --help  Shows this help message.
+    --version    Shows the current version number.
     --auth       Activates the use of HTTP basic authentication when
                  communicating with api.github.com. Use this if the rate
                  limit threshold is achieved.
@@ -262,15 +263,19 @@ def main(argv=sys.argv[1:], dry_run=False):
             help_msg = __doc__
         sys.exit(help_msg)
     # pipgh
-    # pipgh -h
-    # pipgh --help
     if len(argv) == 0:
         help_msg = USAGE_MESSAGE
         help_msg += '\nRun "pipgh --help" for a complete help message\n'
         sys.exit(help_msg)
+    # pipgh -h
+    # pipgh --help
     get_help = len(argv) == 1 and argv[0] in ['-h', '--help']
     if get_help:
         _abort()
+    # pipgh --version
+    get_version = len(argv) == 1 and argv[0] == '--version'
+    if get_version:
+        sys.exit(__version__)
     # pipgh show <full_name>                2
     # pipgh install <full_name>             2
     # pipgh search <query>...               2+
