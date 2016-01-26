@@ -11,12 +11,7 @@ except ImportError:
     from urllib import urlencode
 
 from . import tools
-
-
-__version__ = '0.0.4'
-__description__ = 'A tool to install python packages from Github.'
-__author__ = 'Filipe Funenga'
-__license__ = 'MIT'
+from . import __version__
 
 
 def authenticate(top_level_url=u'https://api.github.com'):
@@ -248,9 +243,6 @@ Examples:
         (...)
         $ pipgh show docopt/docopt | less   # also works
 """.format(file=__file__)
-
-
-__doc__ = USAGE_MESSAGE + u'\n' + HELP_MESSAGE
 
 
 def main(argv=sys.argv[1:], dry_run=False):

@@ -1,7 +1,12 @@
-from .pipgh import *
-from .pipgh import __version__
-from .pipgh import __description__
-from .pipgh import __author__
-from .pipgh import __license__
-from .pipgh import __doc__
+__version__ = '0.0.5a0'
+__description__ = 'A tool to install python packages from Github.'
+__author__ = 'Filipe Funenga'
+__license__ = 'MIT'
+from .pipgh import USAGE_MESSAGE, HELP_MESSAGE
+__doc__ = USAGE_MESSAGE + u'\n' + HELP_MESSAGE
+del USAGE_MESSAGE, HELP_MESSAGE
 
+from .pipgh import main
+from .pipgh import search
+from .pipgh import install
+from .pipgh import show
