@@ -10,8 +10,9 @@ try:
 except ImportError:
     from urllib import urlencode
 
-from . import tools
 from . import __version__
+from . import tools
+from . import terminalsize
 
 
 def authenticate(top_level_url=u'https://api.github.com'):
@@ -76,7 +77,8 @@ def search(auth_flag, argv, output=True):
         lines.append(line)
         maxlen = max(maxlen, len(" ".join(line)))
         description_lens.append(len(" ".join([label, stats])))
-    maxlen = min(maxlen, 76)
+    width, _ = terminalsize.get_terminal_size()
+    maxlen = min(maxlen, width - 4)
     for line, dlen in zip(lines, description_lens):
         label, description, stats = line
         dlen = maxlen - dlen
