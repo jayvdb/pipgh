@@ -48,11 +48,13 @@ if 'clean' in argv:
 
 
 long_description = """\
-pipgh allows searching for Python packages on Github and installing them directly. It further allows to specify a reference to a branch, a release or a commit's hash value.
+A tool to install python packages from Github.
 
-pipgh works with common HTTP GET requests. This simplicity makes it a great solution to deploy software with dependencies available on Github, without the need to install a Version Control System client on the users' system.
+    Why can't we use Github as a means to share our Python code directly?
 
-Pure Python code (2 and 3 compatible). No dependencies.
+*pipgh* searches and installs Python packages from Github. You can further cite a specific branch, release or commit's hash value. This makes the deployment of your Python package as simple as a commit to your repository. (Yup, that means no more wasting of your time!)
+
+Pure Python code (2 and 3 compatible).
 """
 
 
