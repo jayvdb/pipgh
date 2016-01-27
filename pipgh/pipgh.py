@@ -254,7 +254,7 @@ def main(argv=sys.argv[1:], dry_run=False):
             help_msg = u'error: command "%s" is unknown.' % unknown_cmd
             help_msg += '\n' + USAGE_MESSAGE.rstrip()
         else:
-            help_msg = __doc__
+            help_msg = USAGE_MESSAGE + u'\n' + HELP_MESSAGE
         sys.exit(help_msg)
     # pipgh
     if len(argv) == 0:
