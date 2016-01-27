@@ -34,6 +34,7 @@ if 'clean' in argv:
     shutil.rmtree('%s.egg-info' % pipgh.__name__, ignore_errors=True)
     shutil.rmtree('build', ignore_errors=True)
     shutil.rmtree('dist', ignore_errors=True)
+    shutil.rmtree('env', ignore_errors=True)
     def pyclean(path):
         for root, drs, fns in os.walk(path):
             pycache = os.path.join(root, '__pycache__')
