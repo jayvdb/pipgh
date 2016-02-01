@@ -182,7 +182,7 @@ Usage: pipgh [--auth] search <query>...
        pipgh [--auth] show <full_name>
        pipgh install ( (<full_name> [<ref>]) | (-r <requirements.txt>) )
        pipgh [-h | --help | --version]
-""".format(file=__file__)
+"""
 
 
 HELP_MESSAGE = u"""\
@@ -244,22 +244,30 @@ Examples:
         $ pipgh show docopt/docopt
         (...)
         $ pipgh show docopt/docopt | less   # also works
-""".format(file=__file__)
+"""
 
 
 def main(argv=sys.argv[1:], dry_run=False):
     commands = {'search': search, 'show': show, 'install': install}
-    def _abort(unknown_cmd=None):
-        if unknown_cmd != None:
-            help_msg = u'error: command "%s" is unknown.' % unknown_cmd
+    def _abort(error=None, unknown_cmd=None):
+        if error != None or unknown_cmd != None:
+            if unknown_cmd != None:
+                help_msg = u'error: command "%s" is unknown.' % unknown_cmd
+            else:
+                help_msg = u'error: %s.' % error
             help_msg += '\n' + USAGE_MESSAGE.rstrip()
         else:
-            help_msg = USAGE_MESSAGE + u'\n' + HELP_MESSAGE
+            if not dry_run:
+                print(USAGE_MESSAGE + u'\n' + HELP_MESSAGE.rstrip())
+                help_msg = ''
+            else:
+                help_msg = USAGE_MESSAGE + u'\n' + HELP_MESSAGE.rstrip()
         sys.exit(help_msg)
     # pipgh
     if len(argv) == 0:
-        help_msg = USAGE_MESSAGE
-        help_msg += '\nRun "pipgh --help" for a complete help message\n'
+        help_msg = 'Pipgh %s\n' % __version__
+        help_msg += USAGE_MESSAGE + '\n'
+        help_msg += 'Run "pipgh --help" for more information.\n'
         sys.exit(help_msg)
     # pipgh -h
     # pipgh --help
@@ -269,7 +277,12 @@ def main(argv=sys.argv[1:], dry_run=False):
     # pipgh --version
     get_version = len(argv) == 1 and argv[0] == '--version'
     if get_version:
-        sys.exit(__version__)
+        if not dry_run:
+            print(__version__)
+            help_msg = ''
+        else:
+            help_msg = __version__
+        sys.exit(help_msg)
     # pipgh show <full_name>                2
     # pipgh install <full_name>             2
     # pipgh search <query>...               2+
@@ -277,11 +290,15 @@ def main(argv=sys.argv[1:], dry_run=False):
     # pipgh install -r <requirements.txt>   3
     # pipgh --auth show <full_name>         3
     # pipgh --auth search <query>...        3+
-    if len(argv) < 2 or argv[0] not in ['show', 'install', 'search', '--auth']:
+    if argv[0] not in ['show', 'install', 'search', '--auth']:
         _abort(unknown_cmd=argv[0])
+    if len(argv) == 1:
+        _abort(error='missing further options or arguments')
     if argv[0] == '--auth':
-        if len(argv) < 3 or argv[1] not in ['show', 'search']:
+        if argv[1] not in ['show', 'search']:
             _abort(unknown_cmd=argv[1])
+        if len(argv) == 2:
+            _abort(error='missing further options or arguments')
         key = argv[1]
         auth_flag = True
         argv = argv[1:]

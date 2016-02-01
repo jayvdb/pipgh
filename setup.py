@@ -1,3 +1,4 @@
+from __future__ import print_function
 import os
 import sys
 import shutil
@@ -8,9 +9,12 @@ import pipgh
 
 
 argv = sys.argv[1:]
+test_suite = os.environ.get('TOXTESTSUITE', 'tests')
 
 
-if 'test' in argv:
+if ('test' in argv and
+    (test_suite == 'tests' or ('tests.execution' in test_suite))):
+
     _q = 'This command will run all test cases. Are you sure? [y/N] '
     try:
         answer = raw_input(_q)
@@ -18,6 +22,7 @@ if 'test' in argv:
         answer = input(_q)
     if answer.strip().lower() != 'y':
         exit('')
+
     try:
         try:
             username = raw_input(u'Username: ')
@@ -26,6 +31,7 @@ if 'test' in argv:
         password = getpass.getpass(u'Password: ')
     except KeyboardInterrupt:
         exit('')
+
     os.environ['GH_AUTH_USER'] = username
     os.environ['GH_AUTH_PASS'] = password
 
@@ -69,10 +75,7 @@ setuptools.setup(
     url='https://github.com/ffunenga/%s' % pipgh.__name__,
     license='MIT',
     packages=[pipgh.__name__],
-    #test_suite = 'tests.execution.test_search',
-    #test_suite = 'tests.execution.test_install',
-    #test_suite = 'tests.execution.test_show',
-    test_suite = 'tests',
+    test_suite = test_suite,
     entry_points = {
         'console_scripts' : [
             '{pkg} = {pkg}:main'.format(pkg=pipgh.__name__)

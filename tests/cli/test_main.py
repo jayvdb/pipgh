@@ -1,6 +1,8 @@
+from __future__ import print_function
 import unittest
 
 import pipgh
+import pipgh.pipgh
 
 
 class TestMain(unittest.TestCase):
@@ -41,6 +43,35 @@ class TestMain(unittest.TestCase):
                 self.assertRaises(SystemExit, pipgh.main, argv, dry_run=True)
             except AssertionError as e:
                 e.args = (e.args[0] + ' for ' + str(argv),)
+                raise
+
+    def test_cli_fails_output(self):
+        # pipgh [--auth] search (...)
+        # pipgh [--auth] show (...)
+        # pipgh install (...)
+        # pipgh [-h | --help | --version]
+        argvs = [
+            ([], pipgh.pipgh.USAGE_MESSAGE),
+            ([], pipgh.__version__),
+            (['-h'], pipgh.pipgh.USAGE_MESSAGE),
+            (['--help'], pipgh.pipgh.USAGE_MESSAGE),
+            (['-h'], pipgh.pipgh.HELP_MESSAGE.strip()),
+            (['--help'], pipgh.pipgh.HELP_MESSAGE.strip()),
+            (['--version'], pipgh.__version__),
+        ]
+        for idx, (argv, output) in enumerate(argvs):
+            try:
+                pipgh.main(argv, dry_run=True)
+            except SystemExit as e:
+                args = e.args
+            else:
+                _err = 'ArgvCase#%d %s failed to SystemExit' % (idx, str(argv))
+                raise AssertionError(_err)
+            try:
+                self.assertTrue(output in args[0])
+            except AssertionError as e:
+                _err = 'ArgvCase#%d %s failed SystemExit\'s output'
+                e.args = (_err % (idx, str(argv)),)
                 raise
 
     def test_dry_run(self):
