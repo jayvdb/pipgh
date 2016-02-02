@@ -2,12 +2,16 @@
 
 > Why can't we use Github as a means to share our Python code directly?
 
-*pipgh* searches and installs Python packages from Github. You can
-further cite a specific branch, release or commit's hash value. This
-makes the deployment of your Python package as simple as a commit to
-your repository.
+*pipgh* searches and installs Python packages from Github. You can further
+cite a specific branch, release or commit's hash value. This makes the
+deployment of your Python package as simple as a commit to your repository.
 
-Pure Python code (2 and 3 compatible).
+It also allows to inspect the metadata of a repository or to
+look at a singular field, which is very handy for stuff like this:
+
+    $ git clone `pipgh show --clone-url docopt/docopt`
+
+Pure Python code, 2 and 3 compatible.
 
 ###### Search
 
