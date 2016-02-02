@@ -96,44 +96,51 @@ def search(auth_flag, argv, output=True):
 
 
 def show(auth_flag, argv, output=True):
-    if len(argv) != 2 or argv[0] != 'show':
-        sys.exit('usage: pipgh show <full_name>...')
+    opts_flag = True
+    if len(argv) > 2:
+        opts_flag = all(a.startswith('--') for a in argv[1:-1])
+    if argv[0] != 'show' or len(argv) < 2 or not opts_flag:
+        sys.exit('usage: pipgh [--auth] show [--<key>...] <full_name>')
     url = u'https://api.github.com/repos'
     if auth_flag:
         authenticate(url)
-    url += '/' + argv[1]
-    if output:
+    url += '/' + argv[-1]
+    if output and len(argv) == 2:
         _fmt = u"Fetching '%s' information..."
         print(_fmt % tools.header(argv[1]), file=sys.stderr)
     with tools.URLOpenContext(url) as conn:
-        try:
-            headers = conn.getheaders()
-        except AttributeError:
-            headers = conn.headers.dict
         response = conn.read().decode('utf-8')
         response = json.loads(response)
-    url += '/readme'
-    if output:
-        print(u"Fetching %s..." % tools.header('readme'), file=sys.stderr)
-    try:
-        with tools.URLOpenContext(url) as conn:
-            readme = conn.read().decode('utf-8')
-            readme = json.loads(readme)['content']
-    except:
-        readme = u''
-    root = tools.ShowNode(response)
-    try:
+    if len(argv) == 2:
+        url += '/readme'
         if output:
-            print(root)
-    except UnicodeEncodeError:
+            print(u"Fetching %s..." % tools.header('readme'), file=sys.stderr)
+        try:
+            with tools.URLOpenContext(url) as conn:
+                readme = conn.read().decode('utf-8')
+                readme = json.loads(readme)['content']
+        except:
+            readme = u''
+        root = tools.ShowNode(response)
+        try:
+            if output:
+                print(root)
+        except UnicodeEncodeError:
+            if output:
+                print(root.__str__().encode('utf-8'))
+        if sys.version_info < (3, 0, 0):
+            readme = base64.decodestring(readme)
+        else:
+            readme = base64.decodebytes(readme.encode('utf-8')).decode('utf-8')
         if output:
-            print(root.__str__().encode('utf-8'))
-    if sys.version_info < (3, 0, 0):
-        readme = base64.decodestring(readme)
+            print(readme)
     else:
-        readme = base64.decodebytes(readme.encode('utf-8')).decode('utf-8')
-    if output:
-        print(readme)
+        ptr = response
+        for key in argv[1:-1]:
+            key = key[2:].replace('-', '_')
+            ptr = ptr[key]
+        print(ptr)
+        readme = ''
     return response, readme
 
 
@@ -179,7 +186,7 @@ def install(auth_flag, argv, dry_run=False, output=True):
 
 USAGE_MESSAGE = u"""\
 Usage: pipgh [--auth] search <query>...
-       pipgh [--auth] show <full_name>
+       pipgh [--auth] show [--<key>...] <full_name>
        pipgh install ( (<full_name> [<ref>]) | (-r <requirements.txt>) )
        pipgh [-h | --help | --version]
 """
@@ -244,6 +251,14 @@ Examples:
         $ pipgh show docopt/docopt
         (...)
         $ pipgh show docopt/docopt | less   # also works
+
+    or show a specific metadata field with:
+
+        $ pipgh show --clone-url docopt/docopt
+
+    which is useful to, for example, shortcut the git clone command:
+
+        $ git clone `pipgh show --clone-url docopt/docopt`
 """
 
 

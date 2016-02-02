@@ -66,10 +66,18 @@ Show a repository metadata and its README file with this:
     (...)
     $ pipgh show docopt/docopt | less   # also works
 
+Or show a specific metadata field with:
+
+    $ pipgh show --clone-url docopt/docopt
+
+Which is useful to, for example, shortcut the git clone command:
+
+    $ git clone `pipgh show --clone-url docopt/docopt`
+
 ## Usage
 
     pipgh [--auth] search <query>...
-    pipgh [--auth] show <full_name>
+    pipgh [--auth] show [--<key>...] <full_name>
     pipgh install ( (<full_name> [<ref>]) | (-r <requirements.txt>) )
     pipgh [-h | --help | --version]
 

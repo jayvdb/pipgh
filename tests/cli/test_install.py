@@ -40,7 +40,7 @@ class TestInstall(unittest.TestCase):
             (['install', 'requests', 'special'],
              ['requests'],
              ['special']),
-            (['install', '-r', 'tests/cli/requirements.txt'],
+            (['install', '-r', 'tests/execution/requirements.txt'],
              ['docopt/docopt', 'mitsuhiko/flask', 'tornadoweb/tornado', 'kennethreitz/requests'],
              ['0.6.2', '23cf923c7c2e4a3808e6c71b6faa34d1749d4cb6', 'stable', None]),
         ]

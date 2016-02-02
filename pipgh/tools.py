@@ -78,7 +78,9 @@ class ShowNode(object):
         for key, value in self.children:
             if type(value) == dict:
                 value = ShowNode(value, self.level + 4)
-                items.append(u'%s%s:\n%s\n' % (indent, okblue(key), value))
+                indent2 = indent + u'    '
+                vals = (indent, okblue(key), indent2, value)
+                items.append(u'%s%s:\n%s%s\n' % vals)
             else:
                 items.append(u'%s%s: %s\n' % (indent, okblue(key), value))
         rst = u''.join(items).strip()

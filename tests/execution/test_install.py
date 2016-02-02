@@ -22,7 +22,7 @@ class TestInstall(unittest.TestCase):
                             for l in rst.split()))
 
     def test_execution_requirements(self):
-        argv = ['install', '-r', 'tests/cli/requirements.txt']
+        argv = ['install', '-r', 'tests/execution/requirements.txt']
         pipgh.install(False, argv, dry_run=False, output=False)
         rst = subprocess.check_output(['pip', 'freeze'], stderr=subprocess.PIPE)
         #
