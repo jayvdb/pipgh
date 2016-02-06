@@ -18,7 +18,7 @@ Pure Python code, without dependencies. 2 and 3 compatible.
 You can download this repository from github and install it in your
 environment with:
 
-    $ python setup.py install
+    $ python __dev__/setup.py install
 
 You can also go to PyPI and install from the latest version available their:
 
