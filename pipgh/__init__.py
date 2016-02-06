@@ -1,4 +1,4 @@
-__version__ = '0.0.6'
+__version__ = '0.0.7a0'
 __description__ = 'A tool to install python packages from Github.'
 __author__ = 'Filipe Funenga'
 __license__ = 'MIT'
