@@ -11,7 +11,7 @@ look at a singular field, which is very handy for stuff like this:
 
     $ git clone `pipgh show --clone-url docopt/docopt`
 
-Pure Python code, 2 and 3 compatible.
+Pure Python code, without dependencies. 2 and 3 compatible.
 
 ###### Search
 
