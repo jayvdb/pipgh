@@ -54,26 +54,15 @@ if 'clean' in argv:
     shutil.rmtree('.tox', ignore_errors=True)
 
 
-long_description = """\
-A tool to install python packages from Github.
-
-    Why can't we use Github as a means to share our Python code directly?
-
-*pipgh* searches and installs Python packages from Github. You can further cite a specific branch, release or commit's hash value. This makes the deployment of your Python package as simple as a commit to your repository. (Yup, that means no more wasting of your time!)
-
-Pure Python code (2 and 3 compatible).
-"""
-
-
 setuptools.setup(
     name=pipgh.__name__,
-    description=pipgh.__description__,
-    long_description=long_description,
+    description=pipgh.__lead__,
+    long_description=pipgh.__description__,
     version=pipgh.__version__,
-    author='Filipe Funenga',
+    author=pipgh.__author__,
     author_email='fmafunenga@gmail.com',
     url='https://github.com/ffunenga/%s' % pipgh.__name__,
-    license='MIT',
+    license=pipgh.__license__,
     packages=[pipgh.__name__],
     test_suite = test_suite,
     entry_points = {
