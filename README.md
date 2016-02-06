@@ -13,6 +13,13 @@ look at a singular field, which is very handy for stuff like this:
 
 Pure Python code, without dependencies. 2 and 3 compatible.
 
+## Usage
+
+    pipgh [--auth] search <query>...
+    pipgh [--auth] show [--<key>...] <full_name>
+    pipgh install ( (<full_name> [<ref>]) | (-r <requirements.txt>) )
+    pipgh [-h | --help | --version]
+
 ###### Search
 
 Search for individual packages:
@@ -78,21 +85,13 @@ Which is useful to, for example, shortcut the git clone command:
 
     $ git clone `pipgh show --clone-url docopt/docopt`
 
-## Usage
+## Installation
 
-    pipgh [--auth] search <query>...
-    pipgh [--auth] show [--<key>...] <full_name>
-    pipgh install ( (<full_name> [<ref>]) | (-r <requirements.txt>) )
-    pipgh [-h | --help | --version]
+You can download this repository from github and install it in your
+environment with:
 
-## Commands
+    $ python setup.py install
 
-* `search` - Search Python packages in github.
-* `install` - Download and install a package.
-* `show` - Shows information from github about a repository.
+You can also go to PyPI and install from the latest version available their:
 
-## Options
-
-* `-h | --help` - Shows this help message.
-* `--version` - Shows the current version number.
-* `--auth` - Activates the use of HTTP basic authentication. Use this if the rate limit threshold is achieved.
+    $ pip install pipgh
