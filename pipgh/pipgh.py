@@ -139,7 +139,10 @@ def show(auth_flag, argv, output=True):
         for key in argv[1:-1]:
             key = key[2:].replace('-', '_')
             ptr = ptr[key]
-        print(ptr)
+        if output:
+            print(ptr)
+        else:
+            return ptr
         readme = ''
     return response, readme
 
