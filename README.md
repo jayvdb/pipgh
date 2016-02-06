@@ -13,6 +13,17 @@ look at a singular field, which is very handy for stuff like this:
 
 Pure Python code, without dependencies. 2 and 3 compatible.
 
+## Installation
+
+You can download this repository from github and install it in your
+environment with:
+
+    $ python setup.py install
+
+You can also go to PyPI and install from the latest version available their:
+
+    $ pip install pipgh
+
 ## Usage
 
     pipgh [--auth] search <query>...
@@ -20,9 +31,7 @@ Pure Python code, without dependencies. 2 and 3 compatible.
     pipgh install ( (<full_name> [<ref>]) | (-r <requirements.txt>) )
     pipgh [-h | --help | --version]
 
-###### Search
-
-Search for individual packages:
+**SEARCH** for individual packages:
 
     $ pipgh search requests
     Searching github.com for 'requests language:python'...
@@ -46,9 +55,7 @@ is equivalent to search
 
 with your web-browser on github.com/search.
 
-###### Install
-
-Install a package from the latest commit on the master branch:
+**INSTALL** a package from the latest commit on the master branch:
 
     $ pipgh install docopt/docopt
     Fetching files from 'docopt/docopt'...
@@ -69,9 +76,7 @@ Or install a list of packages from a file:
     $ pipgh install -r requirements.txt
     (...)
 
-###### Show
-
-Show a repository metadata and its README file with this:
+**SHOW** a repository metadata and its README file with this:
 
     $ pipgh show docopt/docopt
     (...)
@@ -84,14 +89,3 @@ Or show a specific metadata field with:
 Which is useful to, for example, shortcut the git clone command:
 
     $ git clone `pipgh show --clone-url docopt/docopt`
-
-## Installation
-
-You can download this repository from github and install it in your
-environment with:
-
-    $ python setup.py install
-
-You can also go to PyPI and install from the latest version available their:
-
-    $ pip install pipgh
